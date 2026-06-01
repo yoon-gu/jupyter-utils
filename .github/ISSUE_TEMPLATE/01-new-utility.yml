@@ -73,6 +73,19 @@ body:
       placeholder: "예) Python 3.10, pandas 2.0, numpy 1.24, ipywidgets 8.x, matplotlib 3.7 / 인터넷 X"
 
   - type: dropdown
+    id: delivery
+    attributes:
+      label: "추가 의존성 / 반입 계획"
+      description: "새 패키지가 필요하면 폐쇄망에 어떻게 들어오나요? (prebuilt wheel 오프라인 번들 권장)"
+      options:
+        - "추가 의존성 없음 (표준 라이브러리 + 이미 설치된 것만)"
+        - "선택적(optional) 의존성으로 분리 — extras + lazy import"
+        - "prebuilt wheel 오프라인 번들로 반입 예정"
+        - "잘 모르겠음 (AI가 의존성 최소화 + extras 설계 제안)"
+    validations:
+      required: true
+
+  - type: dropdown
     id: backend
     attributes:
       label: "외부 백엔드 접근 여부"
