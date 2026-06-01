@@ -1,0 +1,55 @@
+name: "📋 스니펫 / 레시피"
+description: "자주 반복하는 작업을 복붙용 코드 스니펫 또는 레시피로 정리합니다."
+title: "[Snippet] "
+labels: ["snippet"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > 📋 설치가 필요 없는 **복붙 스니펫**은 폐쇄망에서 가장 빠르게 효율을 올리는 방법입니다.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: "분류"
+      options:
+        - "데이터 로딩 / IO"
+        - "데이터 정제 / 변환"
+        - "시각화"
+        - "성능 / 프로파일링 / 메모리"
+        - "환경 점검 (버전·경로·자원 확인)"
+        - "디버깅 / 로깅"
+        - "기타"
+    validations:
+      required: true
+
+  - type: textarea
+    id: task
+    attributes:
+      label: "어떤 작업인가요?"
+      placeholder: "예) 노트북에서 현재 커널의 메모리/CPU 사용량을 빠르게 확인하고 싶다."
+    validations:
+      required: true
+
+  - type: textarea
+    id: current
+    attributes:
+      label: "지금 하는 방법 / 불편한 점 (있다면)"
+      placeholder: "예) 매번 psutil 코드를 찾아서 복붙한다. 표준 라이브러리로도 되는지 모르겠다."
+
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: "환경 제약 (해당되는 것 모두 체크)"
+      options:
+        - label: "🚫 인터넷 차단 (폐쇄망)"
+        - label: "📦 추가 패키지 설치가 어렵다 (표준 라이브러리 선호)"
+        - label: "👥 공유 환경"
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "완료 조건 (Acceptance Criteria)"
+      placeholder: |
+        - [ ] 복붙 한 번으로 동작하는 셀 스니펫
+        - [ ] README/노트북에 분류별로 정리됨

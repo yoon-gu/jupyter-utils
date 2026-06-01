@@ -1,0 +1,71 @@
+name: "🧩 Jupyter 확장 / 환경 설정"
+description: "Lab 확장(extension), 커스텀 CSS/JS, 키바인딩, 서버/커널 설정 등을 다룹니다."
+title: "[Ext] "
+labels: ["enhancement", "extension"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > 🧩 폐쇄망에서는 **확장 설치 가능 여부**가 가장 큰 변수입니다.
+        > 오프라인 설치(prebuilt wheel/소스 반입)가 가능한지 먼저 적어주세요.
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: "종류"
+      options:
+        - "JupyterLab 확장 (labextension)"
+        - "Classic Notebook 확장 (nbextension)"
+        - "커스텀 CSS / JS (custom.css 등)"
+        - "키바인딩 / 단축키"
+        - "jupyter_server / 커널 설정 (config)"
+        - "ipython startup 스크립트"
+        - "기타"
+    validations:
+      required: true
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: "목적 / 원하는 동작"
+      description: "이걸로 무엇을 개선하고 싶나요?"
+      placeholder: "예) 셀 실행 시간이 항상 셀 옆에 표시되게 하고 싶다."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: offline
+    attributes:
+      label: "폐쇄망 설치 가능성"
+      description: "확장은 보통 설치가 필요합니다. 현재 환경에서 가능한지 아는 만큼 적어주세요."
+      options:
+        - "이미 설치되어 있음 (설정만 바꾸면 됨)"
+        - "오프라인 설치 가능 (wheel/파일 반입 가능)"
+        - "설치 어려움 — 설정/CSS/JS 등 무설치 방법 위주로"
+        - "잘 모르겠음 (AI가 무설치 대안도 함께 제안)"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: "환경 제약 (해당되는 것 모두 체크)"
+      options:
+        - label: "🚫 인터넷 차단 (폐쇄망)"
+        - label: "🔒 관리자/sudo 권한 없음"
+        - label: "🔁 서버 재시작 불가 (커널 재시작만 가능)"
+        - label: "👥 공유 환경 — 전역 설정 변경이 어렵다 (내 홈 디렉터리 한정)"
+
+  - type: textarea
+    id: version
+    attributes:
+      label: "버전 정보 (아는 만큼)"
+      placeholder: "예) JupyterLab 4.0 / notebook 7 / Python 3.10"
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "완료 조건 (Acceptance Criteria)"
+      placeholder: |
+        - [ ] 설정 파일 위치와 적용 방법이 문서로 정리됨
+        - [ ] 무설치 대안(가능하면)이 함께 제시됨

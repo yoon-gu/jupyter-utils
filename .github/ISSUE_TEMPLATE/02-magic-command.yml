@@ -1,0 +1,81 @@
+name: "✨ IPython 매직 커맨드"
+description: "%line 또는 %%cell 매직 커맨드를 새로 만들거나 개선합니다."
+title: "[Magic] "
+labels: ["enhancement", "magic"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > ✨ 매직 커맨드는 폐쇄망에서도 `ipython` 위에서 바로 등록할 수 있어 활용도가 높습니다.
+        > (`%load_ext`, 또는 `~/.ipython/profile_default/startup/` 자동 로드 등)
+
+  - type: input
+    id: name
+    attributes:
+      label: "매직 커맨드 이름"
+      description: "%기호는 빼고 적어주세요."
+      placeholder: "예) timeall, sql, watch_mem"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: "매직 종류"
+      options:
+        - "line magic (%name ...)"
+        - "cell magic (%%name ...)"
+        - "둘 다 (%name / %%name)"
+        - "잘 모르겠음"
+    validations:
+      required: true
+
+  - type: textarea
+    id: behavior
+    attributes:
+      label: "동작 설명"
+      description: "이 매직이 무엇을 해야 하나요?"
+      placeholder: "예) 셀 안의 모든 표현식 각각의 실행 시간을 측정해 표로 보여준다."
+    validations:
+      required: true
+
+  - type: textarea
+    id: usage
+    attributes:
+      label: "사용 예시"
+      render: python
+      placeholder: |
+        %%timeall
+        a = expensive_1()
+        b = expensive_2()
+        # -> 각 줄별 소요 시간 출력
+
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: "환경 제약 (해당되는 것 모두 체크)"
+      options:
+        - label: "🚫 인터넷 차단 (폐쇄망)"
+        - label: "📦 추가 패키지 설치가 어렵다"
+        - label: "🔒 관리자/sudo 권한 없음"
+        - label: "🔁 서버 재시작 불가 (커널 재시작만 가능)"
+        - label: "👥 공유 환경"
+
+  - type: dropdown
+    id: load
+    attributes:
+      label: "원하는 등록 방식"
+      description: "어떻게 불러 쓰고 싶은지."
+      options:
+        - "%load_ext 로 수동 로드"
+        - "startup 스크립트로 매번 자동 로드"
+        - "상관없음 / AI가 결정"
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "완료 조건 (Acceptance Criteria)"
+      placeholder: |
+        - [ ] %load_ext jupyter_utils 후 %%timeall 사용 가능
+        - [ ] 외부 패키지 없이 표준 라이브러리만으로 동작
+        - [ ] 사용법 예제 포함

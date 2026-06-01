@@ -1,0 +1,46 @@
+name: "🐞 버그 리포트"
+description: "이미 만든 유틸리티/매직/스니펫이 기대대로 동작하지 않을 때."
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: "무엇이 잘못됐나요?"
+      placeholder: "예) %%timeall 이 cell magic으로 등록되지 않고 line magic으로만 동작한다."
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: "재현 절차"
+      description: "단계별로 적어주세요. 가능하면 최소 재현 코드를 포함해주세요."
+      render: python
+      placeholder: |
+        1. %load_ext jupyter_utils
+        2. 아래 셀 실행
+        %%timeall
+        x = 1
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: "기대한 동작"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: "에러 메시지 / 트레이스백"
+      render: shell
+
+  - type: textarea
+    id: env
+    attributes:
+      label: "환경 정보"
+      description: "가능하면 `import sys, IPython; print(sys.version, IPython.__version__)` 결과 등을 붙여주세요."
+      placeholder: "예) Python 3.10.12 / IPython 8.x / JupyterLab 4.0 / 폐쇄망"
