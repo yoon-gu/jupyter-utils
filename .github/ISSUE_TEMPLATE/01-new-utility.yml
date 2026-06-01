@@ -72,6 +72,31 @@ body:
       description: "이미 설치되어 쓸 수 있는 라이브러리와 버전을 적어두면 AI가 그 안에서 구현합니다."
       placeholder: "예) Python 3.10, pandas 2.0, numpy 1.24, ipywidgets 8.x, matplotlib 3.7 / 인터넷 X"
 
+  - type: dropdown
+    id: backend
+    attributes:
+      label: "외부 백엔드 접근 여부"
+      description: "외부 스토리지/데이터(쿼리·파일 등)에 접근한다면, 백엔드 비종속 설계가 필요합니다."
+      options:
+        - "외부 백엔드 접근 없음 (순수 로컬/계산)"
+        - "외부 백엔드 접근 있음 — 백엔드 교체 가능하게 설계 필요"
+        - "잘 모르겠음"
+    validations:
+      required: true
+
+  - type: textarea
+    id: backend_detail
+    attributes:
+      label: "백엔드 상세 (외부 접근이 있다면)"
+      description: |
+        지금 쓰는 백엔드와 향후 바뀔 수 있는 후보를 적어주세요.
+        구현은 추상 인터페이스 + 교체 가능한 어댑터(설정/환경변수로 주입) 방식을 기본으로 합니다.
+      placeholder: |
+        예) 현재: AWS S3 / 향후 후보: GCP GCS, 사내 NFS
+        예) 현재: 사내 Hive / 향후: BigQuery
+        - 인증: 환경변수로 주입, 코드에 하드코딩 X
+        - 특정 SDK 미설치 환경에서도 import 단계에서 죽지 않게 (lazy import)
+
   - type: textarea
     id: acceptance
     attributes:
