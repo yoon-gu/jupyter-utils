@@ -42,7 +42,7 @@ body:
     id: form
     attributes:
       label: "구현 형태 (예상)"
-      description: "여러 형태가 가능하면 가장 가까운 것을 골라주세요. 모르면 '잘 모르겠음'."
+      description: "용도로 고르세요 — 노트북=매직/함수, 터미널=셸/CLI. 여러 형태면 가장 가까운 것, 모르면 '잘 모르겠음'."
       options:
         - "파이썬 함수 / 모듈"
         - "IPython 매직 커맨드 (%, %%)"

@@ -1,12 +1,13 @@
 name: "📋 스니펫 / 레시피"
-description: "자주 반복하는 작업을 복붙용 코드 스니펫 또는 레시피로 정리합니다."
+description: "자주 반복하는 작업을 복붙용 코드·셸 스니펫 또는 레시피로 정리합니다."
 title: "[Snippet] "
 labels: ["snippet"]
 body:
   - type: markdown
     attributes:
       value: |
-        > 📋 설치가 필요 없는 **복붙 스니펫**은 폐쇄망에서 가장 빠르게 효율을 올리는 방법입니다.
+        > 📋 설치가 필요 없는 **복붙 스니펫**(노트북 코드 / 셸 한 줄)은 폐쇄망에서 가장 빠르게 효율을 올리는 방법입니다.
+        > 한 줄·짧은 조합이면 여기, **재사용 가능한 도구 단위**로 키울 거면 🐚 셸 스크립트 / CLI 또는 🧰 유틸리티 템플릿을 쓰세요.
 
   - type: dropdown
     id: category
@@ -19,6 +20,7 @@ body:
         - "성능 / 프로파일링 / 메모리"
         - "환경 점검 (버전·경로·자원 확인)"
         - "디버깅 / 로깅"
+        - "셸 / 터미널 한 줄 명령 (alias·파이프 조합)"
         - "기타"
     validations:
       required: true
@@ -27,7 +29,9 @@ body:
     id: task
     attributes:
       label: "어떤 작업인가요?"
-      placeholder: "예) 노트북에서 현재 커널의 메모리/CPU 사용량을 빠르게 확인하고 싶다."
+      placeholder: |
+        예) 노트북에서 현재 커널의 메모리/CPU 사용량을 빠르게 확인하고 싶다.
+        예) 터미널에서 특정 prefix 하위 용량을 빠르게 합산하고 싶다.
     validations:
       required: true
 
@@ -35,7 +39,8 @@ body:
     id: current
     attributes:
       label: "지금 하는 방법 / 불편한 점 (있다면)"
-      placeholder: "예) 매번 psutil 코드를 찾아서 복붙한다. 표준 라이브러리로도 되는지 모르겠다."
+      render: shell
+      placeholder: "예) 매번 psutil 코드(또는 du | sort 파이프)를 찾아서 복붙한다."
 
   - type: checkboxes
     id: constraints
@@ -43,7 +48,7 @@ body:
       label: "환경 제약 (해당되는 것 모두 체크)"
       options:
         - label: "🚫 인터넷 차단 (폐쇄망)"
-        - label: "📦 추가 패키지 설치가 어렵다 (표준 라이브러리 선호)"
+        - label: "📦 추가 패키지 설치가 어렵다 (표준 라이브러리 / 기본 셸 유틸 선호)"
         - label: "👥 공유 환경"
 
   - type: textarea
@@ -51,5 +56,6 @@ body:
     attributes:
       label: "완료 조건 (Acceptance Criteria)"
       placeholder: |
-        - [ ] 복붙 한 번으로 동작하는 셀 스니펫
+        - [ ] 복붙 한 번으로 동작하는 셀 스니펫 또는 셸 한 줄
         - [ ] README/노트북에 분류별로 정리됨
+

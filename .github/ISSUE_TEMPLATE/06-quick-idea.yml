@@ -12,7 +12,9 @@ body:
     id: idea
     attributes:
       label: "아이디어 (한 줄이면 충분)"
-      placeholder: "예) 셀 실행 끝나면 소리/알림 띄우는 매직 있으면 좋겠다."
+      placeholder: |
+        예) 셀 실행 끝나면 소리/알림 띄우는 매직 있으면 좋겠다.
+        예) 터미널에서 스토리지 경로를 빠르게 검색하는 셸 명령이 있으면 좋겠다.
     validations:
       required: true
 
