@@ -1,0 +1,75 @@
+name: "📦 패키징 / 반입 (오프라인 번들)"
+description: "repo를 wheel로 빌드하고, 의존성·prebuilt 확장까지 모아 폐쇄망에 한 번에 반입하는 작업."
+title: "[Pkg] "
+labels: ["packaging", "delivery"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > 📦 외부에서 wheel + 의존성 wheel을 **하나의 오프라인 번들**로 모아 반입하고,
+        > 폐쇄망에서 `pip install --no-index --find-links=<번들> ...` 로 설치하는 흐름을 다룹니다.
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: "무엇을 패키징/반입하나요?"
+      placeholder: |
+        예) jupyter_utils 본체 + 백엔드 어댑터 + ipywidgets/tqdm + jupyter-resource-usage(prebuilt) 를
+            하나의 번들로 만들어 반입한다.
+    validations:
+      required: true
+
+  - type: textarea
+    id: target_env
+    attributes:
+      label: "타깃 환경 사양 (정확히)"
+      description: "wheel은 OS/Python/아키텍처가 맞아야 설치됩니다. 아는 만큼 정확히."
+      placeholder: |
+        예) Linux x86_64 (manylinux2014), Python 3.10, glibc 2.x
+            JupyterLab 4.x / notebook 7.x
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: "반입 형태"
+      options:
+        - "이 repo를 wheel로 빌드"
+        - "의존성 wheel 수집 (pip download / pip wheel)"
+        - "prebuilt JupyterLab 확장 wheel 포함"
+        - "오프라인 설치 스크립트 / 번들 아카이브 생성"
+        - "위 전체 (end-to-end 번들 파이프라인)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: extras
+    attributes:
+      label: "포함할 선택적 의존성 (extras)"
+      description: "백엔드 SDK 등은 extras로 분리합니다. 어떤 것을 번들에 넣을지."
+      placeholder: |
+        예) [s3]=boto3, [gcs]=google-cloud-storage, [widgets]=ipywidgets, [profile]=line_profiler
+            이번 반입엔 [s3], [widgets] 만 포함
+
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: "제약 / 주의 (해당되는 것 체크)"
+      options:
+        - label: "🚫 폐쇄망 안에서는 PyPI 접근 불가 → --no-index 설치만 가능"
+        - label: "🔒 관리자 권한 없음 → --user 또는 가상환경 설치 필요"
+        - label: "🧱 빌드 도구(컴파일러) 없음 → 순수 wheel(빌드 불필요)만 반입"
+        - label: "🔁 서버 재시작 불가 → 확장 활성화가 재시작 없이 되는지 확인 필요"
+        - label: "📋 반입 절차상 보안 검토/승인 단계가 있음 (번들 목록 명세 필요)"
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "완료 조건 (Acceptance Criteria)"
+      placeholder: |
+        - [ ] `python -m build` 로 jupyter_utils wheel 생성
+        - [ ] 타깃 사양에 맞는 의존성 wheel을 한 폴더로 수집
+        - [ ] `pip install --no-index --find-links=<폴더> jupyter_utils[s3,widgets]` 가 오프라인에서 성공
+        - [ ] 번들에 포함된 패키지/버전 목록(매니페스트)이 함께 생성됨
+        - [ ] 설치/반입 절차가 문서화됨
