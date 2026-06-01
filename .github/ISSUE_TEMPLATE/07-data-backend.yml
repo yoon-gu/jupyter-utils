@@ -1,0 +1,100 @@
+name: "🔌 데이터 백엔드 / 커넥터 (쿼리·스토리지)"
+description: "외부 스토리지·데이터에 접근하는 작업. 백엔드 교체에 견고하도록 추상화 우선으로 설계합니다."
+title: "[Backend] "
+labels: ["enhancement", "backend"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > 🔌 **백엔드 비종속성이 최우선입니다.**
+        > 사내 인프라 변경/이직 등으로 백엔드가 바뀌어도(예: AWS S3 → GCP GCS) 사용자 코드는
+        > 그대로여야 합니다. 추상 인터페이스 뒤에 교체 가능한 어댑터를 두는 방식으로 만듭니다.
+
+  - type: textarea
+    id: operation
+    attributes:
+      label: "어떤 작업인가요?"
+      description: "추상 인터페이스 관점에서 적어주세요 (특정 SDK 호출이 아니라 '무엇을' 하는지)."
+      placeholder: |
+        예) 경로를 주면 객체를 읽어 bytes/DataFrame으로 돌려준다.
+        예) SQL을 주면 결과를 DataFrame으로 돌려준다.
+    validations:
+      required: true
+
+  - type: input
+    id: current_backend
+    attributes:
+      label: "현재 백엔드"
+      placeholder: "예) AWS S3 / 사내 Hive / 로컬 NFS"
+    validations:
+      required: true
+
+  - type: input
+    id: future_backends
+    attributes:
+      label: "향후 바뀔 수 있는 백엔드 (후보)"
+      description: "확장성을 위해 미리 고려할 후보. 모르면 '미정'."
+      placeholder: "예) GCP GCS, Azure Blob, BigQuery, MinIO"
+
+  - type: textarea
+    id: interface
+    attributes:
+      label: "원하는 추상 인터페이스 (있다면)"
+      description: "백엔드와 무관하게 호출하고 싶은 형태를 적어주세요."
+      render: python
+      placeholder: |
+        store = get_storage()          # 설정/환경변수로 백엔드 결정 (s3 / gcs / local ...)
+        data = store.read("path/to/object")
+        store.write("path/to/object", data)
+
+        # 또는
+        df = run_query("SELECT ... ")  # 백엔드(hive/bigquery)는 설정으로 주입
+
+  - type: dropdown
+    id: auth
+    attributes:
+      label: "인증 정보 주입 방식"
+      description: "자격증명은 코드에 하드코딩하지 않습니다."
+      options:
+        - "환경변수"
+        - "설정 파일 (홈 디렉터리)"
+        - "이미 마운트/주입된 자격증명 사용"
+        - "잘 모르겠음 (AI가 안전한 기본값 제안)"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: design
+    attributes:
+      label: "설계 요구사항 (기본 체크 권장)"
+      options:
+        - label: "추상 인터페이스 + 교체 가능한 어댑터(plugin) 구조"
+        - label: "새 백엔드 추가가 기존 코드 수정 없이 가능 (개방-폐쇄)"
+        - label: "특정 백엔드 SDK 미설치 환경에서도 import 단계에서 죽지 않음 (lazy import)"
+        - label: "자격증명을 코드/로그에 노출하지 않음"
+
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: "환경 제약 (해당되는 것 모두 체크)"
+      options:
+        - label: "🚫 인터넷 차단 (폐쇄망)"
+        - label: "📦 백엔드 SDK 설치가 어렵다 (이미 깔린 것만 사용 가능)"
+        - label: "🔒 관리자/sudo 권한 없음"
+        - label: "👥 공유 환경"
+
+  - type: textarea
+    id: available_sdk
+    attributes:
+      label: "현재 사용 가능한 SDK / 패키지 (아는 만큼)"
+      placeholder: "예) boto3 설치됨, google-cloud-storage 없음, pyarrow 있음 / Python 3.10"
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "완료 조건 (Acceptance Criteria)"
+      placeholder: |
+        - [ ] 동일한 사용자 코드로 S3와 (가짜)로컬 백엔드 둘 다 동작
+        - [ ] 백엔드 선택이 환경변수/설정으로만 결정됨
+        - [ ] google SDK 미설치 환경에서도 모듈 import가 성공함
+        - [ ] 새 백엔드 추가 방법이 문서화됨

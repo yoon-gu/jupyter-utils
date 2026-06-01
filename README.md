@@ -14,6 +14,33 @@ Jupyter Lab 유틸리티 모음입니다. (함수·매직 커맨드·확장·스
 
 설치가 필요 없는 순서로 선호합니다: **스니펫 → 매직 커맨드 → 함수/모듈 → (가능하면) 확장**.
 
+## 배포 / 반입 (Offline delivery)
+
+폐쇄망 반입은 두 가지 경로를 함께 지원합니다.
+
+1. **startup 스크립트 떨구기** — 가장 가벼운 경로. `~/.ipython/profile_default/startup/`에 `.py`를 두면 설치 없이 자동 로드.
+2. **prebuilt wheel + 오프라인 번들 반입** — ⭐ 권장. 이 repo를 설치형 패키지로 빌드하고, 의존성까지 **하나의 번들로 모아 한 번에 반입**합니다.
+   - 외부에서 `python -m build` 로 `jupyter_utils` wheel을 만들고,
+   - `pip download` (또는 `pip wheel`)로 **타깃과 동일한 OS/Python/아키텍처** 기준 의존성 wheel을 전부 수집하며,
+   - **prebuilt JupyterLab 확장 wheel**도 함께 담습니다. → 폐쇄망 안에서 npm 빌드 없이 labextension 설치 가능.
+   - 폐쇄망에서는 `pip install --no-index --find-links=<번들폴더> jupyter_utils[all]` 로 오프라인 설치.
+   - 버전·플랫폼 태그(manylinux 등)와 Python 버전을 **타깃 환경에 정확히 맞춰** 수집해야 합니다.
+   - 무거운 백엔드 SDK(boto3/google-cloud-storage 등)는 **extras**(`[s3]`, `[gcs]`)로 분리해 필요한 것만 번들에 포함.
+
+## 설계 원칙
+
+### 백엔드 비종속성 (Backend portability) — ⭐ 핵심
+
+외부 스토리지/데이터에 접근하는 작업(예: 쿼리, 파일 읽기/쓰기)은 **특정 백엔드에 묶이지 않아야** 합니다.
+사내 인프라 변경이나 이직 등으로 환경이 바뀌어도(예: AWS S3 → GCP GCS) 견고하게 쓸 수 있도록,
+**추상화 계층(인터페이스) 뒤에 백엔드 구현을 숨기는** 방식을 기본으로 합니다.
+
+- 사용자 코드는 추상 인터페이스(예: `Storage.read(path)`, `query(sql)`)만 호출합니다.
+- 백엔드(S3 / GCS / 로컬FS / DB 등)는 **교체 가능한 어댑터(plugin)**로 구현합니다.
+- 백엔드 선택은 **설정/환경변수**로 주입하고, 인증 정보는 코드에 하드코딩하지 않습니다.
+- 새 백엔드 추가가 기존 코드 수정 없이 가능하도록(개방-폐쇄 원칙) 설계합니다.
+- 폐쇄망 특성상, 특정 백엔드 SDK가 없는 환경에서도 import 단계에서 죽지 않도록 **선택적(lazy) 의존성**으로 처리합니다.
+
 ## 워크플로우
 
 1. 틈날 때 [이슈 템플릿](.github/ISSUE_TEMPLATE)으로 아이디어를 기록합니다.
@@ -28,9 +55,11 @@ Jupyter Lab 유틸리티 모음입니다. (함수·매직 커맨드·확장·스
 | 🧰 새 유틸리티 / 기능 제안 | 함수·모듈 등 새 도구 제안 |
 | ✨ IPython 매직 커맨드 | `%`/`%%` 매직 추가·개선 |
 | 🧩 Jupyter 확장 / 환경 설정 | 확장·CSS/JS·키바인딩·config |
+| 🔌 데이터 백엔드 / 커넥터 | 쿼리·스토리지 등 외부 접근(백엔드 비종속 설계) |
 | 📋 스니펫 / 레시피 | 복붙용 코드 스니펫 정리 |
 | 🐞 버그 리포트 | 기존 결과물 오동작 |
+| 📦 패키징 / 반입 | wheel 빌드·의존성 수집·오프라인 번들 반입 |
 | 💭 빠른 아이디어 메모 | 한 줄 메모(나중에 구체화) |
 
-> 참고: 템플릿이 참조하는 라벨(`utility`, `magic`, `extension`, `snippet`, `idea`,
-> `needs-triage` 등)은 저장소 Labels에 미리 만들어두면 자동으로 붙습니다.
+> 참고: 템플릿이 참조하는 라벨(`utility`, `magic`, `extension`, `backend`, `packaging`,
+> `delivery`, `snippet`, `idea`, `needs-triage` 등)은 저장소 Labels에 미리 만들어두면 자동으로 붙습니다.
