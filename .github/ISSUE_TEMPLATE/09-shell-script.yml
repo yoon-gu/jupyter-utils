@@ -1,0 +1,96 @@
+name: "🐚 셸 스크립트 / CLI"
+description: "터미널에서 바로 쓰는 셸 스크립트(또는 CLI) 유틸리티를 제안합니다."
+title: "[Shell] "
+labels: ["enhancement", "shell"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > 🐚 터미널 워크플로우용 유틸리티입니다. 폐쇄망 친화적으로 **추가 설치 없이 파일만 떨궈** 쓰는 것을 기본으로,
+        > 가능하면 파이썬 코어를 얇게 감싸 매직/함수와 **로직을 공유**합니다.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: "해결하려는 문제 / 지금 하는 수작업"
+      description: "지금 터미널에서 반복하는 명령 조합이 있다면 그대로 붙여주세요."
+      render: shell
+      placeholder: |
+        예) aws s3 ls s3://data-lake/ --recursive | awk '{print $4}' | grep -i campaign
+    validations:
+      required: true
+
+  - type: input
+    id: command
+    attributes:
+      label: "원하는 명령 이름"
+      placeholder: "예) s3-path-search, ju-ls, env-doctor"
+    validations:
+      required: true
+
+  - type: textarea
+    id: usage
+    attributes:
+      label: "사용 예시 (인자/출력)"
+      render: shell
+      placeholder: |
+        $ s3-path-search s3://data-lake/ campaign --depth 2
+        s3://data-lake/customer/campaign/segment/
+        s3://data-lake/customer/campaign/profile/
+    validations:
+      required: true
+
+  - type: dropdown
+    id: impl
+    attributes:
+      label: "구현 언어 (예상)"
+      description: "백엔드 접근/복잡한 로직이면 파이썬 CLI가 유리하고, 가벼운 파이프 조합이면 순수 셸이 좋습니다."
+      options:
+        - "POSIX sh / bash (기본 유틸 awk/grep/sed 위주)"
+        - "파이썬 CLI (console_scripts entry_point)"
+        - "잘 모르겠음 (AI가 적절히 선택)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: shared_core
+    attributes:
+      label: "노트북 폼팩터와 코어 공유?"
+      description: "같은 기능을 매직/함수로도 쓸 수 있게 코어를 공유할지."
+      options:
+        - "공유 — 파이썬 코어를 매직/함수/셸이 함께 사용"
+        - "셸 전용으로 충분 (코어 공유 불필요)"
+        - "잘 모르겠음"
+
+  - type: dropdown
+    id: delivery
+    attributes:
+      label: "배치 / 반입 방식"
+      description: "무권한 환경 기준."
+      options:
+        - "~/bin 등에 스크립트 파일 떨구고 PATH 추가 (무설치)"
+        - "패키지 console_scripts 로 설치 (wheel 반입 모델)"
+        - "둘 다 지원"
+        - "잘 모르겠음"
+
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: "환경 제약 (해당되는 것 모두 체크)"
+      options:
+        - label: "🚫 인터넷 차단 (폐쇄망) — 추가 패키지 설치 어려움"
+        - label: "🧰 기본 유틸만 가정 (awk/grep/sed 등 POSIX 도구). 특수 의존 최소화"
+        - label: "🔒 관리자/sudo 권한 없음 (홈 디렉터리 한정)"
+        - label: "🖥️ 공유·제약 환경에선 터미널 접근이 막혀 있을 수 있음 → 핵심 기능은 매직/함수로도 제공 고려"
+        - label: "🔌 외부 백엔드(S3/GCS 등) 접근 — 특정 CLI(aws/gsutil)에 묶이지 않게 추상화 고려"
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "완료 조건 (Acceptance Criteria)"
+      placeholder: |
+        - [ ] `s3-path-search ...` 가 예시대로 동작
+        - [ ] `--help`/usage, 친절한 에러, stdin/stdout 파이프 친화
+        - [ ] 추가 설치 없이 파일 배치만으로 실행 가능 (또는 console_scripts 설치)
+        - [ ] (백엔드 접근 시) 특정 CLI에 종속되지 않고 백엔드 교체 가능
+        - [ ] 사용법 예제 포함

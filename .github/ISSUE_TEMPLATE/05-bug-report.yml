@@ -1,5 +1,5 @@
 name: "🐞 버그 리포트"
-description: "이미 만든 유틸리티/매직/스니펫이 기대대로 동작하지 않을 때."
+description: "이미 만든 유틸리티/매직/셸 스크립트/CLI/스니펫이 기대대로 동작하지 않을 때."
 title: "[Bug] "
 labels: ["bug"]
 body:
@@ -42,5 +42,5 @@ body:
     id: env
     attributes:
       label: "환경 정보"
-      description: "가능하면 `import sys, IPython; print(sys.version, IPython.__version__)` 결과 등을 붙여주세요."
-      placeholder: "예) Python 3.10.12 / IPython 8.x / JupyterLab 4.0 / 폐쇄망"
+      description: "노트북이면 `import sys, IPython; print(sys.version, IPython.__version__)` 결과, 셸이면 OS/셸/`bash --version` 등을 붙여주세요."
+      placeholder: "예) Python 3.10.12 / IPython 8.x / JupyterLab 4.0 / Linux x86_64, bash 5.x / 폐쇄망"

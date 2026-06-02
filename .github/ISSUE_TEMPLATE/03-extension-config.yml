@@ -37,10 +37,10 @@ body:
     id: offline
     attributes:
       label: "폐쇄망 설치 가능성"
-      description: "확장은 보통 설치가 필요합니다. 현재 환경에서 가능한지 아는 만큼 적어주세요."
+      description: "prebuilt wheel 반입은 가능하고, 확장은 pip 설치 후 새로고침으로 로드됨이 확인됨. 관건은 의존성 보안검토."
       options:
         - "이미 설치되어 있음 (설정만 바꾸면 됨)"
-        - "prebuilt wheel 반입 예정 (오프라인 번들에 포함 → npm 빌드 불필요)"
+        - "prebuilt wheel 반입 예정 (오프라인 번들 → pip 설치 후 새로고침으로 로드)"
         - "오프라인 설치 가능 (wheel/파일 반입 가능)"
         - "설치 어려움 — 설정/CSS/JS 등 무설치 방법 위주로"
         - "잘 모르겠음 (AI가 무설치 대안도 함께 제안)"
@@ -52,9 +52,10 @@ body:
     attributes:
       label: "환경 제약 (해당되는 것 모두 체크)"
       options:
-        - label: "🚫 인터넷 차단 (폐쇄망)"
-        - label: "🔒 관리자/sudo 권한 없음"
-        - label: "🔁 서버 재시작 불가 (커널 재시작만 가능)"
+        - label: "🚫 인터넷 차단 (폐쇄망) — prebuilt wheel 반입은 가능"
+        - label: "📋 확장+의존(전이 포함)이 정보보안 검토 대상 → 의존성 최소화 필요"
+        - label: "🔒 관리자/sudo 권한 없음 (홈 디렉터리 한정)"
+        - label: "🔄 확장은 pip 설치 후 새로고침으로 로드됨 (서버 재시작 큰 문제 아님). 단 server-extension/config 변경은 별도 확인"
         - label: "👥 공유 환경 — 전역 설정 변경이 어렵다 (내 홈 디렉터리 한정)"
 
   - type: textarea

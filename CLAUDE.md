@@ -7,17 +7,19 @@
 ## 프로젝트 목표
 
 폐쇄망 + 타 조직이 띄워준 Jupyter 환경이라는 **제약 위에서 최대한의 효율**을 내기 위한
-Jupyter Lab 유틸리티 모음. Jupyter 기능 / magic word / extension 을 적극 활용합니다.
-잔 스니펫보다는 **매직 커맨드·확장 단위의 굵직한 유틸리티**를 지향합니다.
+Jupyter Lab + 터미널 유틸리티 모음. Jupyter 기능 / magic word / extension 을 적극 활용하고,
+**터미널에서 바로 쓰는 셸 스크립트형 유틸리티**도 1급 구성요소로 함께 제공합니다.
+잔 스니펫보다는 **매직 커맨드·셸 스크립트·확장 단위의 굵직한 유틸리티**를 지향합니다.
 
 ## 환경 제약 (모든 구현의 전제)
 
-- 🚫 **폐쇄망**: 인터넷에서 `pip install`로 새 패키지를 받기 어렵다. 표준 라이브러리 + 이미 설치된 것 위주.
+- 🚫 **폐쇄망 + 의존성 보안검토**: `pip install`로 인터넷에서 바로 받지는 못한다. **prebuilt wheel 반입은 가능**하지만, 들여오는 **모든 의존 패키지(+전이 의존)가 정보보안 검토를 통과**해야 한다 → 의존성 최소화가 핵심 가치. 표준 라이브러리 우선.
 - 🔒 **권한 제약**: 관리자/sudo 권한 없음. 설정은 보통 홈 디렉터리(`~/.ipython`, `~/.jupyter`) 한정.
-- 🔁 **서버 재시작 불가**: Jupyter 서버는 타 조직이 띄워준다. 커널 재시작 정도만 가능.
+- 🔁 **서버 재시작**: Jupyter 서버는 타 조직이 띄워준다. 다만 **확장은 `pip install` 후 브라우저 새로고침으로 로드되는 것을 확인** → labextension 도입에 큰 장애는 아니다(서버 측 server-extension/config 변경은 여전히 제약일 수 있음). 커널 재시작은 가능.
 - 👥 **공유 환경**: 여러 사람이 함께 쓰므로 전역 변경은 지양. 네트워크/쿼터/레이트리밋 부담 고려.
 
-구현 형태 선호 순서(설치 부담이 적은 순): **스니펫 → 매직 커맨드 → 함수/모듈 → (가능하면) 확장**.
+구현 형태(설치 부담이 적은 순): **스니펫 → 셸 스크립트 → 매직 커맨드 → 함수/모듈 → (가능하면) 확장**.
+용도에 따라 고른다 — 노트북 작업은 매직/함수, 터미널 작업은 셸 스크립트. 둘 다 유효한 1급 형태다.
 
 ## 핵심 설계 원칙
 
@@ -33,26 +35,34 @@ Jupyter Lab 유틸리티 모음. Jupyter 기능 / magic word / extension 을 적
 - 특정 백엔드 SDK가 없는 환경에서도 **import 단계에서 죽지 않도록 lazy(선택적) import**로 처리한다.
 - 여러 기능(쿼리·스토리지·자동완성 등)은 **동일한 어댑터/커넥션 계층을 공유**한다.
 
-### 2. 오프라인 반입 (Offline delivery) — prebuilt wheel
-폐쇄망 반입은 두 경로를 함께 지원한다.
+### 2. 오프라인 반입 (Offline delivery) — prebuilt wheel + 의존성 보안검토
+prebuilt wheel 반입 자체는 가능하다. **진짜 게이트는 의존 패키지의 정보보안 검토**다. 따라서:
 
-1. **startup 스크립트 떨구기** — 가장 가벼운 fallback. `~/.ipython/profile_default/startup/`에 `.py`.
-2. **prebuilt wheel + 오프라인 번들** — ⭐ 권장 배포 모델.
-   - 이 repo를 설치형 패키지(wheel)로 빌드(`python -m build`).
-   - `pip download`/`pip wheel`로 **타깃과 동일한 OS/Python/아키텍처(manylinux 등)** 기준 의존성 wheel을 전부 수집.
-   - **prebuilt JupyterLab 확장 wheel**도 함께 담는다 → 폐쇄망 안에서 npm 빌드 없이 labextension 설치 가능.
-   - 폐쇄망: `pip install --no-index --find-links=<번들폴더> jupyter_utils[extras]`.
-   - 무거운 백엔드 SDK(boto3/google-cloud-storage 등)는 **extras**(`[s3]`, `[gcs]`)로 분리해 필요한 것만 번들에 포함.
+- **의존성 최소화가 최우선.** 코어는 표준 라이브러리만으로 import 성공해야 하고, 새 의존성 추가는 "보안검토 비용"을 치른다. 추가 전 대안(표준 라이브러리/이미 깔린 것/소규모 vendoring)을 먼저 검토한다.
+- **전이 의존성(transitive)까지 전부 검토 대상**이다. 전이 의존이 적은/없는 **순수 파이썬 패키지**를 선호한다.
+- 때로는 **작은 순수파이썬 코드 vendoring**이 패키지 1개(+그 전이 의존)를 통째 반입하는 것보다 검토가 쉽다(트레이드오프, 라이선스 확인 필수).
+- 무거운 백엔드 SDK(boto3/google-cloud-storage 등)는 **extras**(`[s3]`, `[gcs]`)로 분리해 **보안검토 단위를 작게** 쪼갠다 — 필요한 것만 반입.
+- 반입 번들에는 **의존성 매니페스트(SBOM류)**를 함께 만든다: 이름·버전·용도·라이선스·해시·전이 의존 목록. 버전/해시는 **핀 고정(reproducible)**.
+
+반입 절차(외부에서 빌드 → 보안검토 → 폐쇄망 설치):
+1. 이 repo를 wheel로 빌드(`python -m build`).
+2. `pip download`/`pip wheel`로 **타깃과 동일한 OS/Python/아키텍처(manylinux 등)** 기준 의존성 wheel을 전부 수집(전이 의존 포함).
+3. **prebuilt JupyterLab 확장 wheel**도 함께 담는다 → 폐쇄망 안에서 npm 빌드 없이 labextension 설치 가능(설치 후 새로고침으로 로드).
+4. 의존성 매니페스트 생성 → **정보보안 검토** → 통과분만 번들에 포함.
+5. 폐쇄망: `pip install --no-index --find-links=<번들폴더> jupyter_utils[extras]`.
+
+> startup 스크립트 떨구기(`~/.ipython/profile_default/startup/`의 `.py`)는 여전히 **무의존 fallback**으로 유지한다.
 
 ### 3. 확장(extension)의 현실적 구분
-- **IPython 확장**(`%load_ext`, 순수 파이썬): npm 빌드 불필요 → 폐쇄망에서 실현 가능. 매직 다수가 여기 속함.
-- **JupyterLab 확장**(JS/TS, npm 빌드): **prebuilt wheel 반입**이 가능할 때만 현실적. 아니면 server-extension + custom CSS/JS로 우회.
+- **IPython 확장**(`%load_ext`, 순수 파이썬): npm 빌드 불필요 → 폐쇄망에서 가장 쉽게 실현. 매직 다수가 여기 속함.
+- **JupyterLab 확장**(prebuilt/federated wheel): **prebuilt wheel 반입이 가능하고, `pip install` 후 새로고침으로 로드됨이 확인**되어 현실적이다. 관건은 그 확장과 의존의 **보안검토 통과** + 의존성 최소화. (server-extension/config 변경이 필요한 부분은 서버 측 제약을 별도 확인)
 
 ## 패키지/구현 컨벤션 (지향점)
 
 - 설치형 파이썬 패키지(`pyproject.toml`, `src/jupyter_utils/` 레이아웃).
 - 매직은 entry point / `load_ext`로 등록. 무설치 fallback으로 startup 스크립트도 허용.
-- 선택적 의존성은 `extras` + lazy import. 코어는 표준 라이브러리만으로 import 성공해야 한다.
+- 셸 스크립트는 `scripts/`(또는 `bin/`)에 실행권한 부여해 두고, 패키지의 `console_scripts`로도 노출 가능하면 함께 제공. 가능하면 파이썬 코어를 얇게 감싸 매직/함수와 로직을 공유.
+- 선택적 의존성은 `extras` + lazy import. 코어는 표준 라이브러리만으로 import 성공해야 한다. 새 의존성은 **보안검토 비용**이므로 추가 전 정당화/대안(표준 라이브러리·vendoring)을 먼저 따진다.
 - 결과 표현은 `pandas.DataFrame`을 기본으로 하되, 없으면 list/dict로 폴백.
 - 친절한 에러 메시지(빈 입력, 잘못된 경로/변수명, 자격증명 미설정 등).
 - 모든 기능에 사용법 예제(도큐스트링/예제 노트북) 포함.
@@ -63,6 +73,7 @@ Jupyter Lab 유틸리티 모음. Jupyter 기능 / magic word / extension 을 적
 
 - `%%sql <var>` — line에 변수명, cell에 SQL → 결과를 그 변수에 바인딩 (**issue #2**)
 - `%ls` 스토리지 리스팅 — 라인 매직 + 함수 + (선택) CLI, Tab 경로 자동완성 (**issue #3**)
+- 스토리지 경로 키워드 검색 — prefix 레벨 집계, 매직/함수/셸 (**issue #5**)
 - 공통 백엔드 어댑터 계층 — S3/GCS/로컬 어댑터(여러 기능의 공통 토대)
 - 커넥션/백엔드 매니저 — 활성 백엔드 전환·자격증명 안전 주입
 - `%%cache` — 셀 결과 디스크 캐싱(재시작 불가 제약 대응)
@@ -71,20 +82,26 @@ Jupyter Lab 유틸리티 모음. Jupyter 기능 / magic word / extension 을 적
 
 > 새 아이디어가 생기면 이 목록에 독립 항목으로 덧붙인다. 순서는 의미 없음.
 
-## 폼팩터 가이드 (노트북 적합도)
+## 폼팩터 가이드 (용도별 선택)
 
-- **라인/셀 매직**: Jupyter에 가장 native. 인라인·빠름, HTML 렌더, **Tab 자동완성 가능**(IPython `complete_command` 훅). 탐색·인터랙션 1순위.
+- **라인/셀 매직**: Jupyter에 가장 native. 인라인·빠름, HTML 렌더, **Tab 자동완성 가능**(IPython `complete_command` 훅). 노트북 탐색·인터랙션 1순위.
 - **파이썬 함수**: 결과를 다음 셀에서 가공·재사용. 매직과 **같은 코어 공유**. 단 문자열 인자 Tab 완성은 어려움(Jedi가 코드만 완성).
-- **CLI**: 자동화/터미널용이나, 공유·제약 환경에선 터미널 접근이 막혀 있을 수 있어 **보너스**(entry_point로 저비용 추가).
-- 결론: 노트북이면 **매직 + 함수(코어 공유)를 1순위**, CLI는 선택. Tab 자동완성이 필요하면 매직 형태로.
+- **셸 스크립트 (터미널 1급)**: 터미널 워크플로우·자동화·파이프라인에 최적. 폐쇄망 친화적(추가 설치 없이 파일만 떨구면 됨).
+  - POSIX `sh`/`bash` + 기본 유틸(awk/grep/sed) 위주, 추가 의존 최소화. `set -euo pipefail` 등 견고하게.
+  - 배치는 무권한 친화적으로: `~/bin`(PATH 추가) 또는 패키지 `console_scripts`(entry_point)로 함께 노출.
+  - `--help`/usage, 친절한 에러, stdin/stdout 파이프 친화. 가능하면 파이썬 코어를 얇게 감싸 **매직/함수와 같은 로직 공유**.
+  - ⚠️ 공유·제약 환경에선 터미널 접근이 막혀 있을 수도 있으니, 핵심 기능은 가능하면 매직/함수로도 쓸 수 있게 둔다.
+- **CLI(파이썬 entry_point)**: 셸 스크립트와 같은 역할의 파이썬 버전. 코어 로직을 그대로 재사용.
+- 결론: **용도로 고른다.** 노트북=매직+함수, 터미널=셸 스크립트/CLI. 가능하면 **하나의 코어를 여러 폼팩터가 공유**한다.
 
 ## 이슈 작성 / 구현 규칙
 
-- 이슈는 `.github/ISSUE_TEMPLATE/`의 템플릿(유틸리티·매직·확장·백엔드·패키징·스니펫·버그·아이디어)을 사용한다.
+- 이슈는 `.github/ISSUE_TEMPLATE/`의 템플릿(유틸리티·매직·셸 스크립트·확장·백엔드·패키징·스니펫·버그·아이디어)을 사용한다.
 - 모든 구현 이슈에는 **환경 제약 체크 + 의존성/반입 계획 + 완료 조건(Acceptance Criteria)**이 담긴다.
 - AI는 구현 시 위 제약·설계 원칙을 어기지 않는지 항상 확인하고, 어겨야 한다면 먼저 이슈에 질문/제안을 남긴다.
-- 새 의존성을 추가할 때는 반드시 extras 분리 + lazy import + 오프라인 반입 가능성을 함께 고려한다.
+- 새 의존성을 추가할 때는 반드시 extras 분리 + lazy import + 오프라인 반입 가능성에 더해, **전이 의존을 포함한 정보보안 검토 비용**과 대안(표준 라이브러리·vendoring)을 함께 따진다.
 
 ## 참고 (관련 이슈)
 - #2 `%%sql` 매직 — line 변수명 + cell SQL → 결과 바인딩
 - #3 오브젝트 스토리지 리스팅 `%ls` + Tab 자동완성
+- #5 스토리지 경로 키워드 검색 — prefix 레벨 집계 (매직/함수/셸)
